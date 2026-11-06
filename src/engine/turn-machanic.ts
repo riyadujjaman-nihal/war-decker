@@ -86,11 +86,16 @@ export function advanceTurn(
   };
 
   const updatedBoard = board.map((unit) => {
-    if (unit.faction === nextPlayer) {
-      return { ...unit, hasAttacked: false };
-    }
-    return unit;
-  });
+  if (unit.faction === nextPlayer) {
+    return {
+      ...unit,
+      hasAttacked: false,
+      isSuppressed: false, // Clear suppression at start of player's turn
+      isEntrenched: unit.abilities?.includes('ENTRENCHED') ? true : unit.isEntrenched
+    };
+  }
+  return unit;
+});
 
   return {
     nextTurnState: {
