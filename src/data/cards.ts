@@ -62,6 +62,7 @@ export const EASTERN_FRONT_CARDS: Card[] = [
         description: 'Standard German field howitzer.'
     }
 ];
+
 export const USSR_STARTER_DECK: Card[] = [
   { id: 'ussr_cons_1', name: 'Conscript Riflemen', faction: 'USSR', cost: 1, attack: 2, defense: 2, type: 'Infantry', abilities: ['ENTRENCHED'] },
   { id: 'ussr_cons_2', name: 'Conscript Riflemen', faction: 'USSR', cost: 1, attack: 2, defense: 2, type: 'Infantry', abilities: ['ENTRENCHED'] },
@@ -70,6 +71,8 @@ export const USSR_STARTER_DECK: Card[] = [
   { id: 'ussr_t34_2', name: 'T-34/76 Tank', faction: 'USSR', cost: 3, attack: 4, defense: 5, type: 'Armor' },
   { id: 'ussr_kv1', name: 'KV-1 Heavy Tank', faction: 'USSR', cost: 5, attack: 6, defense: 7, type: 'Armor', abilities: ['HEAVY_ARMOR'] },
   { id: 'ussr_katyusha_1', name: 'Katyusha Rocket Battery', faction: 'USSR', cost: 4, attack: 5, defense: 2, type: 'Artillery', abilities: ['SUPPRESSIVE_FIRE'] },
+  { id: 'ussr_cmd_urrah', name: 'Urrah! Charge', faction: 'USSR', cost: 2, attack: 0, defense: 0, type: 'Command', commandEffect: 'URRAH_CHARGE', description: 'Give all friendly units +1 Attack this turn.' },
+  { id: 'ussr_cmd_winter', name: 'General Winter', faction: 'USSR', cost: 3, attack: 0, defense: 0, type: 'Command', commandEffect: 'GENERAL_WINTER', description: 'Suppress all enemy units on the board.' }
 ];
 
 export const GERMANY_STARTER_DECK: Card[] = [
@@ -79,4 +82,5 @@ export const GERMANY_STARTER_DECK: Card[] = [
   { id: 'ger_p4_2', name: 'Panzer IV Ausf. H', faction: 'GERMANY', cost: 3, attack: 5, defense: 4, type: 'Armor' },
   { id: 'ger_tiger', name: 'Tiger I Heavy Tank', faction: 'GERMANY', cost: 6, attack: 7, defense: 7, type: 'Armor', abilities: ['HEAVY_ARMOR'] },
   { id: 'ger_art_1', name: '10.5cm leFH 18 Field Gun', faction: 'GERMANY', cost: 3, attack: 4, defense: 3, type: 'Artillery', abilities: ['SUPPRESSIVE_FIRE'] },
+  { id: 'ger_cmd_stuka', name: 'Stuka Air Strike', faction: 'GERMANY', cost: 3, attack: 0, defense: 0, type: 'Command', commandEffect: 'AIR_STRIKE', description: 'Deal 3 damage to any frontline unit.' }
 ];

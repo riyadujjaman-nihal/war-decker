@@ -1,8 +1,11 @@
 export type Faction = 'USSR' | 'GERMANY';
 export type UnitType = 'Infantry' | 'Armor' | 'Artillery';
+export type CardType = UnitType | 'Command';
 export type Lane = 'FRONTLINE' | 'BACKLINE';
 export type GamePhase = 'LOGISTICS' | 'MAIN' | 'COMBAT';
 export type UnitAbility = 'ENTRENCHED' | 'HEAVY_ARMOR' | 'SUPPRESSIVE_FIRE';
+export type CommandEffect = 'AIR_STRIKE' | 'GENERAL_WINTER' | 'URRAH_CHARGE';
+
 export interface Card {
   id: string;
   name: string;
@@ -10,9 +13,10 @@ export interface Card {
   cost: number;
   attack: number;
   defense: number;
-  type: UnitType;
+  type: CardType;
   description?: string;
   abilities?: UnitAbility[];
+  commandEffect?: CommandEffect;
 }
 
 export interface CardInstance extends Card {

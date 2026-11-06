@@ -1,17 +1,19 @@
-import { CardInstance, Lane, UnitType } from '../types/game';
+import { CardInstance, Lane, CardType } from '../types/game';
 
 /**
  * Gets allowed lanes for unit deployment based on UnitType.
  */
-export function getAllowedLanes(unitType: UnitType): Lane[] {
-  switch (unitType) {
+export function getAllowedLanes(type: CardType): Lane[] {
+  switch (type) {
     case 'Infantry':
     case 'Armor':
-      return ['FRONTLINE'];
+      return ['FRONTLINE', 'BACKLINE'];
     case 'Artillery':
-      return ['BACKLINE', 'FRONTLINE']; // Primary Backline, can move up if desperate
+      return ['BACKLINE'];
+    case 'Command':
+      return []; // Command cards do not deploy to board lanes
     default:
-      return ['FRONTLINE'];
+      return [];
   }
 }
 

@@ -1,8 +1,7 @@
-// src/components/UnitUnit.tsx
 import React from 'react';
 import { CardInstance, Faction } from '../types/game';
 
-interface UnitUnitProps {
+interface UnitProps {
   unit: CardInstance;
   activeTurn: Faction;
   isSelected: boolean;
@@ -10,7 +9,7 @@ interface UnitUnitProps {
   onSelect: () => void;
 }
 
-export const UnitUnit: React.FC<UnitUnitProps> = ({
+export const UnitUnit: React.FC<UnitProps> = ({
   unit,
   activeTurn,
   isSelected,
@@ -44,7 +43,11 @@ export const UnitUnit: React.FC<UnitUnitProps> = ({
         <span style={{ color: '#ff7675' }}>ATK: {unit.attack}</span>
         <span style={{ color: '#74b9ff' }}>HP: {unit.currentHp}/{unit.defense}</span>
       </div>
-      {unit.hasAttacked && <p style={{ fontSize: '9px', color: '#e74c3c', margin: '3px 0 0 0', fontWeight: 'bold' }}>[EXHAUSTED]</p>}
+      <div style={{ marginTop: '4px', fontSize: '9px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+        {unit.isSuppressed && <span style={{ color: '#e67e22', fontWeight: 'bold' }}>[SUPPRESSED]</span>}
+        {unit.isEntrenched && <span style={{ color: '#2ecc71', fontWeight: 'bold' }}>[ENTRENCHED]</span>}
+        {unit.hasAttacked && <span style={{ color: '#e74c3c', fontWeight: 'bold' }}>[EXHAUSTED]</span>}
+      </div>
     </div>
   );
 };

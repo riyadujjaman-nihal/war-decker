@@ -3,6 +3,7 @@ import { Card, CardInstance, Faction, Lane, PlayerHQ } from './types/game';
 import { createInitialTurnState, advanceTurn } from './engine/turn-machanic';
 import { validateTargeting, getAllowedLanes } from './engine/rules';
 import { executeCombatSequence } from './engine/combat';
+import { executeCommandCard } from './engine/commands';
 import { CardItem } from './components/Carditem';
 import { UnitUnit } from './components/Unit';
 
@@ -26,6 +27,28 @@ export default function App() {
 
     if (activePlayerState.currentSupply < card.cost) {
       alert("Not enough Supply Points!");
+      return;
+    }
+
+    // If it's a Command card, execute its instant effect!
+    if (card.type === 'Command') {
+      const result = executeCommandCard(card, selectedAttackerId, board, hqs, activeFaction);
+      setBoard(result.updatedBoard);
+      setHqs(result.updatedHQs);
+      setCombatLogs((prev) => [...result.combatLog, ...prev.slice(0, 4)]);
+
+      const newHand = activeHand.filter((_, i) => i !== index);
+      setTurnState({
+        ...turnState,
+        players: {
+          ...turnState.players,
+          [activeFaction]: {
+            ...activePlayerState,
+            currentSupply: activePlayerState.currentSupply - card.cost,
+            hand: newHand
+          }
+        }
+      });
       return;
     }
 
@@ -196,7 +219,7 @@ export default function App() {
           <h3 style={{ margin: '0 0 10px 0', fontSize: '14px', color: '#aaa' }}>Combat Log</h3>
           <div style={{ fontSize: '12px', color: '#ccc', display: 'flex', flexDirection: 'column', gap: '5px' }}>
             {combatLogs.length === 0 && <em>No actions recorded yet.</em>}
-            {combatLogs.map((log, i) => <div key={i}>• {log}</div>)}
+            {combatLogs.map((log, i) => <div key={i}>{log}</div>)}
           </div>
         </div>
 
@@ -207,20 +230,29 @@ export default function App() {
               <div key={index} style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                 <CardItem card={card} activeTurn={activeFaction} onPlay={() => {}} />
                 {!winner && (
-                  <div style={{ display: 'flex', gap: '4px' }}>
+                  card.type === 'Command' ? (
                     <button 
                       onClick={() => playCardToLane(card, index, 'FRONTLINE')}
-                      style={{ fontSize: '10px', padding: '3px 6px', background: '#333', color: '#fff', border: '1px solid #555', cursor: 'pointer', borderRadius: '3px' }}
+                      style={{ fontSize: '10px', padding: '3px 6px', background: '#8e44ad', color: '#fff', border: 'none', cursor: 'pointer', borderRadius: '3px', width: '100%' }}
                     >
-                      Front
+                      Execute Order
                     </button>
-                    <button 
-                      onClick={() => playCardToLane(card, index, 'BACKLINE')}
-                      style={{ fontSize: '10px', padding: '3px 6px', background: '#333', color: '#fff', border: '1px solid #555', cursor: 'pointer', borderRadius: '3px' }}
-                    >
-                      Back
-                    </button>
-                  </div>
+                  ) : (
+                    <div style={{ display: 'flex', gap: '4px' }}>
+                      <button 
+                        onClick={() => playCardToLane(card, index, 'FRONTLINE')}
+                        style={{ fontSize: '10px', padding: '3px 6px', background: '#333', color: '#fff', border: '1px solid #555', cursor: 'pointer', borderRadius: '3px' }}
+                      >
+                        Front
+                      </button>
+                      <button 
+                        onClick={() => playCardToLane(card, index, 'BACKLINE')}
+                        style={{ fontSize: '10px', padding: '3px 6px', background: '#333', color: '#fff', border: '1px solid #555', cursor: 'pointer', borderRadius: '3px' }}
+                      >
+                        Back
+                      </button>
+                    </div>
+                  )
                 )}
               </div>
             ))}
