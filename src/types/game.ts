@@ -19,3 +19,8 @@ export interface CardInstance extends Card {
   hasAttacked: boolean;
   lane: Lane;
 }
+// Add to src/types/game.ts
+export interface PlayerHQ {
+  faction: Faction;
+  hp: number;
+}
