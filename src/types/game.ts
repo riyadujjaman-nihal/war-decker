@@ -1,7 +1,7 @@
 export type Faction = 'USSR' | 'GERMANY';
 export type UnitType = 'Infantry' | 'Armor' | 'Artillery';
 export type Lane = 'FRONTLINE' | 'BACKLINE';
-
+export type GamePhase = 'LOGISTICS' | 'MAIN' | 'COMBAT';
 export interface Card {
   id: string;
   name: string;
@@ -23,4 +23,12 @@ export interface CardInstance extends Card {
 export interface PlayerHQ {
   faction: Faction;
   hp: number;
+}
+export interface PlayerState {
+  faction: Faction;
+  currentSupply: number;
+  maxSupply: number;
+  deck: Card[];
+  hand: Card[];
+  graveyard: Card[];
 }

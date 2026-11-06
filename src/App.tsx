@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { EASTERN_FRONT_CARDS } from './data/cards';
 import { Card, CardInstance, Faction, Lane, PlayerHQ } from './types/game';
 import { createInitialTurnState, advanceTurn } from './engine/turn-machanic';
 import { validateTargeting, getAllowedLanes } from './engine/rules';
@@ -10,7 +9,6 @@ import { UnitUnit } from './components/Unit';
 export default function App() {
   const [turnState, setTurnState] = useState(createInitialTurnState());
   const [board, setBoard] = useState<CardInstance[]>([]);
-  const [hand, setHand] = useState<Card[]>(EASTERN_FRONT_CARDS);
   const [selectedAttackerId, setSelectedAttackerId] = useState<string | null>(null);
   const [combatLogs, setCombatLogs] = useState<string[]>([]);
   const [hqs, setHqs] = useState<PlayerHQ[]>([
@@ -21,13 +19,10 @@ export default function App() {
 
   const activeFaction = turnState.activePlayer;
   const activePlayerState = turnState.players[activeFaction];
+  const activeHand = activePlayerState.hand;
 
   const playCardToLane = (card: Card, index: number, targetLane: Lane) => {
     if (winner) return;
-    if (card.faction !== activeFaction) {
-      alert(`It is currently the ${activeFaction}'s turn!`);
-      return;
-    }
 
     if (activePlayerState.currentSupply < card.cost) {
       alert("Not enough Supply Points!");
@@ -40,18 +35,20 @@ export default function App() {
       return;
     }
 
+    // Remove card from player's hand and deduct supply
+    const newHand = activeHand.filter((_, i) => i !== index);
     setTurnState({
       ...turnState,
       players: {
         ...turnState.players,
         [activeFaction]: {
           ...activePlayerState,
-          currentSupply: activePlayerState.currentSupply - card.cost
+          currentSupply: activePlayerState.currentSupply - card.cost,
+          hand: newHand
         }
       }
     });
 
-    setHand(hand.filter((_, i) => i !== index));
     const newUnit: CardInstance = {
       ...card,
       instanceId: Math.random().toString(),
@@ -117,8 +114,8 @@ export default function App() {
             Turn {turnState.turnNumber} | Active Turn: <span style={{ color: activeFaction === 'USSR' ? '#ff4d4d' : '#4da6ff', fontWeight: 'bold' }}>{activeFaction}</span>
           </p>
           <div style={{ display: 'flex', gap: '20px', marginTop: '8px', fontSize: '13px' }}>
-            <span style={{ color: '#ff7675' }}>USSR HQ HP: <strong>{ussrHqHp}/20</strong></span>
-            <span style={{ color: '#74b9ff' }}>GERMANY HQ HP: <strong>{gerHqHp}/20</strong></span>
+            <span style={{ color: '#ff7675' }}>USSR HQ HP: <strong>{ussrHqHp}/20</strong> | Deck: {turnState.players.USSR.deck.length}</span>
+            <span style={{ color: '#74b9ff' }}>GERMANY HQ HP: <strong>{gerHqHp}/20</strong> | Deck: {turnState.players.GERMANY.deck.length}</span>
           </div>
         </div>
 
@@ -204,12 +201,12 @@ export default function App() {
         </div>
 
         <div style={{ background: '#1a1a1a', padding: '15px', borderRadius: '8px', border: '1px solid #333' }}>
-          <h3 style={{ margin: '0 0 10px 0', fontSize: '14px', color: '#aaa' }}>Your Hand</h3>
+          <h3 style={{ margin: '0 0 10px 0', fontSize: '14px', color: '#aaa' }}>{activeFaction}'s Hand ({activeHand.length}/6)</h3>
           <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-            {hand.map((card, index) => (
+            {activeHand.map((card, index) => (
               <div key={index} style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                 <CardItem card={card} activeTurn={activeFaction} onPlay={() => {}} />
-                {card.faction === activeFaction && !winner && (
+                {!winner && (
                   <div style={{ display: 'flex', gap: '4px' }}>
                     <button 
                       onClick={() => playCardToLane(card, index, 'FRONTLINE')}

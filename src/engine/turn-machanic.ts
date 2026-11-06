@@ -1,10 +1,5 @@
-import { CardInstance, Faction, GamePhase } from '../types/game';
-
-export interface PlayerState {
-  faction: Faction;
-  currentSupply: number;
-  maxSupply: number;
-}
+import { CardInstance, Faction, GamePhase, PlayerState } from '../types/game';
+import { USSR_STARTER_DECK, GERMANY_STARTER_DECK } from '../data/cards';
 
 export interface TurnState {
   turnNumber: number;
@@ -14,28 +9,58 @@ export interface TurnState {
 }
 
 const MAX_SUPPLY_CAP = 10;
+const HAND_LIMIT = 6;
 
-/**
- * Initializes default starting turn state for USSR vs GERMANY.
- */
+/** Helper to draw cards from a deck */
+export function drawCards(player: PlayerState, amount: number): PlayerState {
+  const newDeck = [...player.deck];
+  const newHand = [...player.hand];
+  const newGraveyard = [...player.graveyard];
+
+  for (let i = 0; i < amount; i++) {
+    if (newDeck.length === 0) break;
+    const drawnCard = newDeck.shift()!;
+    if (newHand.length < HAND_LIMIT) {
+      newHand.push(drawnCard);
+    } else {
+      newGraveyard.push(drawnCard); // Discard overdrawn cards
+    }
+  }
+
+  return { ...player, deck: newDeck, hand: newHand, graveyard: newGraveyard };
+}
+
 export function createInitialTurnState(): TurnState {
+  // Initialize and draw starting hand (3 cards each)
+  const ussrInitial = drawCards({
+    faction: 'USSR',
+    currentSupply: 1,
+    maxSupply: 1,
+    deck: [...USSR_STARTER_DECK],
+    hand: [],
+    graveyard: []
+  }, 3);
+
+  const gerInitial = drawCards({
+    faction: 'GERMANY',
+    currentSupply: 1,
+    maxSupply: 1,
+    deck: [...GERMANY_STARTER_DECK],
+    hand: [],
+    graveyard: []
+  }, 3);
+
   return {
     turnNumber: 1,
     activePlayer: 'USSR',
     phase: 'LOGISTICS',
     players: {
-      USSR: { faction: 'USSR', currentSupply: 1, maxSupply: 1 },
-      GERMANY: { faction: 'GERMANY', currentSupply: 1, maxSupply: 1 }
+      USSR: ussrInitial,
+      GERMANY: gerInitial
     }
   };
 }
 
-/**
- * Handles transitioning to the next player's turn:
- * 1. Flips active player
- * 2. Increments max supply (up to cap) and fully refills supply points
- * 3. Resets attack exhaustion on active player's units
- */
 export function advanceTurn(
   currentState: TurnState,
   board: CardInstance[]
@@ -43,19 +68,23 @@ export function advanceTurn(
   const nextPlayer: Faction = currentState.activePlayer === 'USSR' ? 'GERMANY' : 'USSR';
   const newTurnNumber = nextPlayer === 'USSR' ? currentState.turnNumber + 1 : currentState.turnNumber;
 
-  const activePlayerState = currentState.players[nextPlayer];
-  const newMaxSupply = Math.min(MAX_SUPPLY_CAP, activePlayerState.maxSupply + 1);
+  // Refill supply & draw 1 card for the active player
+  const rawNextPlayerState = currentState.players[nextPlayer];
+  const newMaxSupply = Math.min(MAX_SUPPLY_CAP, rawNextPlayerState.maxSupply + 1);
+
+  const suppliedState: PlayerState = {
+    ...rawNextPlayerState,
+    maxSupply: newMaxSupply,
+    currentSupply: newMaxSupply
+  };
+
+  const updatedNextPlayerState = drawCards(suppliedState, 1);
 
   const updatedPlayers = {
     ...currentState.players,
-    [nextPlayer]: {
-      ...activePlayerState,
-      maxSupply: newMaxSupply,
-      currentSupply: newMaxSupply
-    }
+    [nextPlayer]: updatedNextPlayerState
   };
 
-  // Reset attack status for units belonging to the new active player
   const updatedBoard = board.map((unit) => {
     if (unit.faction === nextPlayer) {
       return { ...unit, hasAttacked: false };
@@ -63,12 +92,13 @@ export function advanceTurn(
     return unit;
   });
 
-  const nextTurnState: TurnState = {
-    turnNumber: newTurnNumber,
-    activePlayer: nextPlayer,
-    phase: 'MAIN',
-    players: updatedPlayers
+  return {
+    nextTurnState: {
+      turnNumber: newTurnNumber,
+      activePlayer: nextPlayer,
+      phase: 'MAIN',
+      players: updatedPlayers
+    },
+    updatedBoard
   };
-
-  return { nextTurnState, updatedBoard };
 }
